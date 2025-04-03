@@ -1,6 +1,6 @@
 // Preprocessor Directives
-#ifndef OpenGLPrj
-#define OpenGLPrj
+#ifndef OpenGL
+#define OpenGL
 #pragma once
 
 // System Headers

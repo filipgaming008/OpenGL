@@ -1,15 +1,14 @@
 // Local Headers
-#include "OpenGLPrj.hpp"
+#include "OpenGL.hpp"
 
 // System Headers
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 // Standard Headers
-#include <cstdio>
-#include <cstdlib>
+#include <iostream>
 
-int main(int argc, char * argv[]) {
+int main(){
 
     // Load GLFW and Create a Window
     glfwInit();
@@ -22,14 +21,19 @@ int main(int argc, char * argv[]) {
 
     // Check for Valid Context
     if (mWindow == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Context");
+        std::cerr << "Failed to create GLFW window" << std::endl;
         return EXIT_FAILURE;
     }
 
     // Create Context and Load OpenGL Functions
     glfwMakeContextCurrent(mWindow);
     gladLoadGL();
-    fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false) {
