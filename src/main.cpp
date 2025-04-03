@@ -181,11 +181,10 @@ int main()
         }
         n = n + 4;
         
-        // x = 12;
-        // angle_begin = 0.0f;
+        // x = 6;
+        // angle_begin = M_PI/2;
         // delta_angle = 2*M_PI / x;
-        // r = 0.6f;
-        // for(int i = 0; i<x+2; i++){
+        // for(int i = 0; i<x+1; i++){
         //     vertices.push_back(xc+r*cos(angle_begin));
         //     vertices.push_back(yc+r*sin(angle_begin));
         //     vertices.push_back(zc);
@@ -292,7 +291,7 @@ int main()
             glDrawArrays(GL_TRIANGLE_STRIP, radiationthing * 5 + 2, radiationthing * 2);
         }else if(type == 1){
             glUseProgram(shaderProgram);
-            // glDrawArrays(GL_LINE_STRIP, n + 1, 6);
+            // glDrawArrays(GL_LINE_STRIP, n + 1, 13);
             glDrawArrays(GL_TRIANGLES, 0, n);
         }
         
