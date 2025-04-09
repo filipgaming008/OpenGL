@@ -233,7 +233,24 @@ int main()
         radiationthing = resolution;
     }
     else if(type == 2){
+        double xc = -0.9f;
+        double yc = 0.0f;
+        double zc = 0.0f;
+        double r1 = 0.1f;
+        double resolution = 100;
+        double x_dist = 2/resolution;
+        double angle_begin = M_PI;
+        double delta_angle = 2*M_PI/resolution;
+        for (int i = 0; i<resolution + 1; i++){
+                vertices.push_back(xc+r1*cos(angle_begin));
+                vertices.push_back(yc+r1*sin(angle_begin) * 2.0f);
+                vertices.push_back(zc);
 
+                angle_begin+=delta_angle;
+                xc += x_dist;
+        }
+
+        n = resolution + 1;
     }
     
 
@@ -293,6 +310,9 @@ int main()
             glUseProgram(shaderProgram);
             // glDrawArrays(GL_LINE_STRIP, n + 1, 13);
             glDrawArrays(GL_TRIANGLES, 0, n);
+        }else if(type == 2){
+            glUseProgram(shaderProgram);
+            glDrawArrays(GL_LINE_STRIP, 0, n);
         }
         
         // glBindVertexArray(0); // no need to unbind it every time
