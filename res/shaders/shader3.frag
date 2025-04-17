@@ -24,7 +24,11 @@ void main()
     float angle = atan(pos.y, pos.x);
     float radius = length(pos);
 
-    float hue = (angle / (2.0f * 3.14159265359f) + 0.5);
+    angle += 3.14159265359f * 2.0f;
+
+    angle = mod(angle, 6.28318530718f);
+
+    float hue = angle / 6.28318530718f;
     float sat = radius + 1.0f;
     float val = 0.8f;
 
