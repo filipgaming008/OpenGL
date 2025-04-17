@@ -7,7 +7,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
+#include <math.h>
 
+double M_PI = 3.14159265358979323846;
 
 const std::string program_name = ("GLSL Shader class example");
 
@@ -17,9 +20,6 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 800;
-
-float xOffset = 0.0f;
-float yOffset = 0.0f;
 
 int main()
 {
@@ -61,25 +61,131 @@ int main()
 
     std::string used_shaders("shader1");
 
-    Shader ourShader(shader_location + used_shaders + std::string(".vert"),
+    Shader Shader1(shader_location + used_shaders + std::string(".vert"),
+                     shader_location + used_shaders + std::string(".frag")
+                     );
+
+    used_shaders = "shader2";
+    Shader Shader2(shader_location + used_shaders + std::string(".vert"),
+                     shader_location + used_shaders + std::string(".frag")
+                     );
+
+    used_shaders = "shader3";
+    Shader Shader3(shader_location + used_shaders + std::string(".vert"),
                      shader_location + used_shaders + std::string(".frag")
                      );
 
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-        float vertices[] = {
-        // positions             // colors           // texture coordinates
-            0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // top right
-            0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom right
-           -0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom left
-           -0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   1.0f, 1.0f  // top left
-        };
+    
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
 
-        unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
+    std::cout<<"Select a picture to draw from 1 to 4: ";
+    int type;
+    std::cin>>type;
+
+    int resolution;
+
+    if(type == 1){
+
+        vertices.push_back(-0.8f); vertices.push_back(0.4f);  // top left
+        vertices.push_back(-0.6f); vertices.push_back(0.4f);  // top right
+        vertices.push_back(-0.8f); vertices.push_back(-0.4f); // bottom left
+        vertices.push_back(-0.6f); vertices.push_back(-0.4f); // bottom right
+
+        indices.push_back(0); indices.push_back(1); indices.push_back(2); // first triangle
+        indices.push_back(1); indices.push_back(2); indices.push_back(3); // second triangle
+
+        float xc = 0.1f;
+        float yc = 0.0f;
+        resolution = 100;
+        float r1 = 0.5f;
+        float r2 = 0.3f;
+        float start_angle = 0.0f;
+        float delta_angle = 2*M_PI/resolution;
+
+        vertices.push_back(xc); vertices.push_back(yc);
+
+        for(int i = 0; i < resolution + 1; i++)
+        {
+            float x = xc + r1 * cos(start_angle);
+            float y = yc + r1 * sin(start_angle);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            
+            start_angle += delta_angle;
+        }
+
+        vertices.push_back(xc); vertices.push_back(yc);
+
+        for(int i = 0; i < resolution + 1; i++)
+        {
+            float x = xc + r2 * cos(start_angle);
+            float y = yc + r2 * sin(start_angle);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            
+            start_angle += delta_angle;
+        }
+
+    }
+    else if(type == 2){
+        float rectWidth = 1.8f;
+        float rectHeight = 0.2f;
+        float startX = -0.9f;
+        float startY = 0.9f;
+        float spacing = 0.2f;
+
+        for (int i = 0; i < 5; ++i) {
+            float x1 = startX;
+            float y1 = startY - i * (rectHeight + spacing);
+            float x2 = x1 + rectWidth;
+            float y2 = y1 - rectHeight;
+
+            vertices.push_back(x1); vertices.push_back(y1); // top left
+            vertices.push_back(x2); vertices.push_back(y1); // top right
+            vertices.push_back(x1); vertices.push_back(y2); // bottom left
+            vertices.push_back(x2); vertices.push_back(y2); // bottom right
+
+            // unsigned int offset = i * 4;
+            // indices.push_back(offset); indices.push_back(offset + 1); indices.push_back(offset + 2); // first triangle
+            // indices.push_back(offset + 1); indices.push_back(offset + 2); indices.push_back(offset + 3); // second triangle
+        }
+    }
+    else if(type == 3){
+        float xc = 0.0f;
+        float yc = 0.0f;
+        resolution = 100;
+        float r1 = 0.6f;
+
+        float start_angle = 0.0f;
+        float delta_angle = 2*M_PI/resolution;
+
+        vertices.push_back(xc); vertices.push_back(yc);
+
+        for(int i = 0; i < resolution + 1; i++)
+        {
+            float x = xc + r1 * cos(start_angle);
+            float y = yc + r1 * sin(start_angle);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            
+            start_angle += delta_angle;
+        }
+
+
+
+        // vertices.push_back(-0.5f); vertices.push_back(0.5f);  // top left
+        // vertices.push_back(0.5f); vertices.push_back(0.5f);   // top right
+        // vertices.push_back(-0.5f); vertices.push_back(-0.5f); // bottom left
+        // vertices.push_back(0.5f); vertices.push_back(-0.5f);  // bottom right
+
+        // indices.push_back(0); indices.push_back(1); indices.push_back(2); // first triangle
+        // indices.push_back(1); indices.push_back(2); indices.push_back(3); // second triangle
+
+    }
 
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -90,52 +196,14 @@ int main()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void*>(nullptr));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void*>(nullptr));
     glEnableVertexAttribArray(0);
-
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // texture coordinates attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-
-    // load and create a texture
-    // -------------------------
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // stbi_set_flip_vertically_on_load(true);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("../res/textures/popov.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-
 
     // render loop
     // -----------
@@ -147,18 +215,57 @@ int main()
 
         // render
         // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // bind Texture
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        // render container
-        ourShader.use();
-        ourShader.setFloat("xOffset", xOffset);
-        ourShader.setFloat("yOffset", yOffset);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        // render container
+        if (type == 1){
+            Shader1.use();
+            Shader1.setFloat("R", 0.1f);
+            Shader1.setFloat("G", 0.1f);
+            Shader1.setFloat("B", 0.9f);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            Shader1.setFloat("R", 0.0f);
+            Shader1.setFloat("G", 0.5f);
+            Shader1.setFloat("B", 0.9f);
+            glDrawArrays(GL_TRIANGLE_FAN, 4, resolution + 4);
+            Shader1.setFloat("R", 1.0f);
+            Shader1.setFloat("G", 1.0f);
+            Shader1.setFloat("B", 1.0f);
+            glDrawArrays(GL_TRIANGLE_FAN, resolution + 4 + 3, resolution * 2 + 4);
+        }
+        else if(type == 2){
+            Shader2.use();
+            Shader2.setVec2("Resolution", SCR_WIDTH, SCR_HEIGHT);
+
+            Shader2.setVec3("Color1", 0.0f, 0.0f, 1.0f);
+            Shader2.setVec3("Color2", 1.0f, 1.0f, 0.0f);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+            Shader2.setVec3("Color1", 1.0f, 0.0f, 1.0f);
+            Shader2.setVec3("Color2", 1.0f, 0.5f, 0.0f);
+            glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+
+            Shader2.setVec3("Color1", 1.0f, 0.0f, 0.0f);
+            Shader2.setVec3("Color2", 0.0f, 1.0f, 0.0f);
+            glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+
+            Shader2.setVec3("Color1", 0.0f, 0.6f, 0.8f);
+            Shader2.setVec3("Color2", 0.0f, 0.0f, 1.0f);
+            glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+
+            Shader2.setVec3("Color1", 0.0f, 0.6f, 0.8f);
+            Shader2.setVec3("Color2", 1.0f, 0.5f, 0.0f);
+            glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
+        }
+        else if(type == 3){
+            Shader3.use();
+            Shader3.setVec2("Resolution", SCR_WIDTH, SCR_HEIGHT);
+
+            glDrawArrays(GL_TRIANGLE_FAN, 0, resolution + 2);
+            // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -184,38 +291,6 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-        if(yOffset < 1.0f){
-            yOffset += 0.01f;
-        }
-        else{
-            yOffset = -1.0f;
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-        if(yOffset > -1.0f){
-            yOffset -= 0.01f;
-        }
-        else{
-            yOffset = 1.0f;
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-        if(xOffset > -1.0f){
-            xOffset -= 0.01f;
-        }
-        else{
-            xOffset = 1.0f;
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-        if(xOffset < 1.0f){
-            xOffset += 0.01f;
-        }
-        else{
-            xOffset = -1.0f;
-        }
     }
 }
 
