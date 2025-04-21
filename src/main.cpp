@@ -1,6 +1,8 @@
 // Local Headers
 #include "OpenGL.hpp"
 #include "Shader.hpp"
+#include "Camera.hpp"
+#include "Quaternion.hpp"
 
 // System Headers
 #include <glad/glad.h>
@@ -16,11 +18,14 @@ const unsigned int SCR_HEIGHT = 900;
 
 const std::string name = "Shader Testing Stuff";
 
-glm::vec3 movement(0.0f, 0.0f, 0.0f);
+// glm::vec3 movement(0.0f, 0.0f, 0.07f);
+glm::dvec2 mousePos(0.0f, 0.0f);
 
 // Function Prototypes
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow * window);
+
+Camera camera;
 
 int main(){
 
@@ -38,6 +43,8 @@ int main(){
         return EXIT_FAILURE;
     }
     glfwMakeContextCurrent(Window);
+
+    glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Load OpenGL Functions
     gladLoadGL();
@@ -94,16 +101,17 @@ int main(){
         
         // Process Input
         processInput(Window);
-
+        cursor_position_callback(Window, mousePos.x, mousePos.y);
+        camera.mouse(glm::make_vec2(mousePos));
 
         // Background Fill Color
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-
         shader1.use();
         shader1.setFloat("time", (float)glfwGetTime());
-        shader1.setVec3f("movement", movement.x, movement.y, movement.z);
+        shader1.setVec3f("rayOrigin" , camera.position.x, camera.position.y, camera.position.z);
+        shader1.setVec3f("rayDirection" , camera.direction.x, camera.direction.y, camera.direction.z);
         // std::cout<<"Movement: " << movement.x << ", " << movement.y << ", " << movement.z << std::endl;
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
@@ -128,21 +136,31 @@ void processInput(GLFWwindow * window) {
     
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         // std::cout << "W key pressed" << std::endl;
-        movement.z += 0.01f;
-    
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        // std::cout << "A key pressed" << std::endl;
-        movement.x -= 0.01f;
-    
+        camera.moveF(0.1f);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         // std::cout << "S key pressed" << std::endl;
-        movement.z -= 0.01f;
-
+        camera.moveF(-0.1f);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        // std::cout << "A key pressed" << std::endl;
+        camera.moveR(0.1f);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         // std::cout << "D key pressed" << std::endl;
-        movement.x += 0.01f;
+        camera.moveR(-0.1f);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        // std::cout << "E key pressed" << std::endl;
+        camera.moveU(-0.1f);
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        // std::cout << "Q key pressed" << std::endl;
+        camera.moveU(0.1f);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        // std::cout << "Space key pressed" << std::endl;
+        camera.position = glm::vec3(0.0, 0.0, -3.0);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    glfwGetCursorPos(window, &xpos, &ypos);
+    // std::cout<<"Mouse Position: " << xpos << ", " << ypos << std::endl;
+    mousePos.x = xpos;
+    mousePos.y = ypos;
 }
