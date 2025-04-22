@@ -13,19 +13,16 @@
 #include <vector>
 #include <string>
 
-const unsigned int SCR_WIDTH = 1600;
-const unsigned int SCR_HEIGHT = 900;
-
-const std::string name = "Shader Testing Stuff";
-
-// glm::vec3 movement(0.0f, 0.0f, 0.07f);
-glm::dvec2 mousePos(0.0f, 0.0f);
 
 // Function Prototypes
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow * window);
 
+const std::string name = "Shader Testing Stuff";
+
 Camera camera;
+glm::dvec2 mousePos(0.0f, 0.0f);
+
 
 int main(){
 
@@ -54,9 +51,10 @@ int main(){
     }
 
     std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
-
-    // Shader's init
+    // Shaders init
     std::string shaders_location("../res/shaders/");
     std::string shader_name("shader");
 
@@ -64,7 +62,6 @@ int main(){
 
     shader1.use();
     shader1.setVec2f("resolution", float(SCR_WIDTH), float(SCR_HEIGHT));
-    shader1.setVec3f("movement", 0.0f, 0.0f, 0.0f);
 
     // Vertex Data
     std::vector<float> vertices;
@@ -105,14 +102,14 @@ int main(){
         camera.mouse(glm::make_vec2(mousePos));
 
         // Background Fill Color
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader1.use();
         shader1.setFloat("time", (float)glfwGetTime());
         shader1.setVec3f("rayOrigin" , camera.position.x, camera.position.y, camera.position.z);
         shader1.setVec3f("rayDirection" , camera.direction.x, camera.direction.y, camera.direction.z);
-        // std::cout<<"Movement: " << movement.x << ", " << movement.y << ", " << movement.z << std::endl;
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
         
@@ -154,7 +151,7 @@ void processInput(GLFWwindow * window) {
         camera.moveU(0.05f);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         // std::cout << "Space key pressed" << std::endl;
-        camera.position = glm::vec3(0.0, 0.0, -3.0);
+        camera.position = glm::vec3(0.0, 0.0, -2.0);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)

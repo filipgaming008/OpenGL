@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-//glm constants
 #include <glm/gtc/constants.hpp>
 
 class Quaternion{
