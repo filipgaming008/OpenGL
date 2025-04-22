@@ -36,11 +36,13 @@ float map(vec3 p)
     float sphere1 = sdSphere(p + vec3(0.0, sin(time * 0.5), 0.0), 1.0);
     float box1 = sdBox(p + vec3(sin(time * 0.75) * 1.5, 0.0, 0.0), vec3(0.6, 0.6, 0.6));
 
+    float light = sdSphere(p - vec3(sin(time * 0.75) * 5.0, 3.0, cos(time * 0.75) * 5.0), 0.5);
+
     float h = 1.0;
     vec3 n = vec3(0.0, 1.0, 0.0);
     float ground = sdPlane(p, n, h);
 
-    return opSmoothUnion(box1, opSmoothUnion(ground , sphere1, 0.5), 0.5);
+    return min(light, opSmoothUnion(ground, opSmoothUnion(sphere1, box1, 0.5), 0.5));
 }
 
 vec3 getNormal(vec3 p) {
@@ -97,6 +99,8 @@ void main(){
     float rayMarchIterations = 200.0;
     float rayMarchDistance = 1000.0;
     vec3 col = vec3(0.0);
+    vec3 lightColor = vec3(1.0);
+    vec3 lightSource = vec3(sin(time * 0.75) * 5.0, 3.0, cos(time * 0.75) * 5.0);
 
     float dist = rayMarch(rayOrigin, rd, rayMarchDistance, rayMarchIterations);
 
@@ -106,38 +110,43 @@ void main(){
         vec3 p = rayOrigin + rd * dist;
         vec3 n = getNormal(p);
 
-        // diffuse lighting;
-        vec3 lightColor = vec3(1.0);
-        vec3 lightSource = vec3(sin(time * 0.75) * 5.0, 2.0, cos(time * 0.75) * 5.0);
-        float diffuseStrenght = max(0.0, dot(normalize(lightSource), n));
-        vec3 diffuse = diffuseStrenght * lightColor / dist;
+        float lightsdf = sdSphere(p - lightSource, 0.5);
+        if(lightsdf < 0.5){
+            col = lightColor;
+        }else{
+            // diffuse lighting;
+            float diffuseStrenght = max(0.0, dot(normalize(lightSource), n));
+            vec3 diffuse = diffuseStrenght * lightColor / dist;
 
-        // col = diffuse;
+            // col = diffuse;
 
-        // specular lighting
-        vec3 viewS = normalize(rayOrigin);
-        vec3 reflectS = normalize(reflect(-lightSource, n));
-        float specularStrenght = pow(max(0.0, dot(viewS, reflectS)), 32.0);
-        vec3 specular = specularStrenght * lightColor / dist;
+            // specular lighting
+            vec3 viewS = normalize(rayOrigin);
+            vec3 reflectS = normalize(reflect(-lightSource, n));
+            float specularStrenght = pow(max(0.0, dot(viewS, reflectS)), 32.0);
+            vec3 specular = specularStrenght * lightColor / dist;
 
-        vec3 lighting = diffuse * 0.75 + specular * 0.25;
+            vec3 lighting = diffuse * 0.75 + specular * 0.25;
 
-        col = lighting;
+            col = lighting;
 
-        // shadow
-        vec3 lightDirection = normalize(lightSource);
-        float distanceToLight = length(lightSource - p);
-        vec3 ro = p + n * 0.1;
-        vec3 rd = lightDirection;
+            // shadow
+            vec3 lightDirection = normalize(lightSource);
+            float distanceToLight = length(lightSource - p);
+            vec3 ro = p + n * 0.1;
+            vec3 rd = lightDirection;
 
-        float dist = rayMarch(ro, rd, distanceToLight, rayMarchIterations);
-        if (dist < distanceToLight){
-            col *= vec3(0.25);
+            float dist = rayMarch(ro, rd, distanceToLight, rayMarchIterations);
+            if (dist < distanceToLight || lightsdf > 0.5){
+                col *= vec3(0.25);
+            }
         }
-
-        // gamma correction
-        col = pow(col, vec3(1.0 / 2.2));
+    }else{
+        col = vec3(1.0) / dist;
     }
+
+    // gamma correction
+    col = pow(col, vec3(1.0 / 2.2));
 
     FragColor = vec4(col,1.0);
 }
