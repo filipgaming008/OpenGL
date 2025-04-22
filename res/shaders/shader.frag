@@ -137,7 +137,7 @@ void main(){
             vec3 rd = lightDirection;
 
             float dist = rayMarch(ro, rd, distanceToLight, rayMarchIterations);
-            if (dist < distanceToLight || lightsdf > 0.5){
+            if (dist < distanceToLight){
                 col *= vec3(0.25);
             }
         }
