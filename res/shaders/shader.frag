@@ -17,24 +17,30 @@ float sdPlane( vec3 p, vec3 n, float h )
   return dot(p,n) + h;
 }
 
-// float sdBox( vec3 p, vec3 b )
-// {
-//     vec3 q = abs(p) - b;
-//     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-// }
+float sdBox( vec3 p, vec3 b )
+{
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
+float opSmoothUnion(float d1, float d2, float k) {
+  float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+  return mix(d2, d1, h) - k * h * (1.0 - h);
+}
 
 float map(vec3 p)
 {
     // vec3 q = p;
     // q = fract(q) - 0.5;
 
-    float sphere1 = sdSphere(p, 1.0);
+    float sphere1 = sdSphere(p + vec3(0.0, sin(time * 0.5), 0.0), 1.0);
+    float box1 = sdBox(p + vec3(sin(time * 0.75) * 1.5, 0.0, 0.0), vec3(0.6, 0.6, 0.6));
 
     float h = 1.0;
     vec3 n = vec3(0.0, 1.0, 0.0);
     float ground = sdPlane(p, n, h);
 
-    return min(ground , sphere1);
+    return opSmoothUnion(box1, opSmoothUnion(ground , sphere1, 0.5), 0.5);
 }
 
 vec3 getNormal(vec3 p) {
@@ -46,13 +52,13 @@ vec3 getNormal(vec3 p) {
     return normalize(n);
 }
 
-vec3 calcRD(vec2 uv) {
+vec3 calcRD(vec2 uv, float fov) {
 
     vec3 lookat = rayDirection + rayOrigin;
     vec3 f = normalize(lookat - rayOrigin);
     vec3 r = normalize(cross(vec3(0.0, 1.0, 0.0), f));
     vec3 u = normalize(cross(f, r));
-    vec3 c = rayOrigin + f * 1.0;
+    vec3 c = rayOrigin + f * fov;
 
     vec3 i = c + uv.x * r + uv.y * u;
 
@@ -86,50 +92,52 @@ float rayMarch(vec3 ro, vec3 rd, float maxdist, float steps) {
 void main(){
     // init
     vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / resolution.y;
-    vec3 rd = calcRD(uv);
+    float fov = 1.0;
+    vec3 rd = calcRD(uv, fov);
     float rayMarchIterations = 200.0;
     float rayMarchDistance = 1000.0;
     vec3 col = vec3(0.0);
 
-
     float dist = rayMarch(rayOrigin, rd, rayMarchDistance, rayMarchIterations);
 
-    if (dist < 1000.0){
+    if (dist < rayMarchDistance){
         col = vec3(1.0);
 
         vec3 p = rayOrigin + rd * dist;
         vec3 n = getNormal(p);
 
+        // diffuse lighting;
         vec3 lightColor = vec3(1.0);
-        vec3 lightSource = vec3(sin(time) * 5.0, 3.0, cos(time)* 5.0);
+        vec3 lightSource = vec3(sin(time * 0.75) * 5.0, 2.0, cos(time * 0.75) * 5.0);
         float diffuseStrenght = max(0.0, dot(normalize(lightSource), n));
-        vec3 diffuse = diffuseStrenght * lightColor;
+        vec3 diffuse = diffuseStrenght * lightColor / dist;
 
-        col = diffuse;
+        // col = diffuse;
+
+        // specular lighting
+        vec3 viewS = normalize(rayOrigin);
+        vec3 reflectS = normalize(reflect(-lightSource, n));
+        float specularStrenght = pow(max(0.0, dot(viewS, reflectS)), 32.0);
+        vec3 specular = specularStrenght * lightColor / dist;
+
+        vec3 lighting = diffuse * 0.75 + specular * 0.25;
+
+        col = lighting;
+
+        // shadow
+        vec3 lightDirection = normalize(lightSource);
+        float distanceToLight = length(lightSource - p);
+        vec3 ro = p + n * 0.1;
+        vec3 rd = lightDirection;
+
+        float dist = rayMarch(ro, rd, distanceToLight, rayMarchIterations);
+        if (dist < distanceToLight){
+            col *= vec3(0.25);
+        }
+
+        // gamma correction
+        col = pow(col, vec3(1.0 / 2.2));
     }
 
-    // for(float i = 0.0; i < rayMarchIterations; i++){
-
-    //     vec3 p = rayOrigin + rd * d;
-    //     vec3 n = getNormal(p);
-
-    //     vec3 l = normalize(light - p);
-    //     float diff = max(dot(n, l), 0.0);
-    //     vec3 diffuse = diff * lightColor;
-
-    //     float dist_to_obj = map(p);
-
-    //     d += dist_to_obj;
-        
-    //     col = diffuse;
-        
-    //     if (d < 0.001 || d > 100.0){
-    //         col = vec3(0.0);
-    //         break;
-    //     }
-    // }
-    
-    // col = vec3(d * 0.1);
-    
     FragColor = vec4(col,1.0);
 }

@@ -136,22 +136,22 @@ void processInput(GLFWwindow * window) {
     
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         // std::cout << "W key pressed" << std::endl;
-        camera.moveF(0.1f);
+        camera.moveF(0.05f);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         // std::cout << "S key pressed" << std::endl;
-        camera.moveF(-0.1f);
+        camera.moveF(-0.05f);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         // std::cout << "A key pressed" << std::endl;
-        camera.moveR(0.1f);
+        camera.moveR(0.05f);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         // std::cout << "D key pressed" << std::endl;
-        camera.moveR(-0.1f);
+        camera.moveR(-0.05f);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         // std::cout << "E key pressed" << std::endl;
-        camera.moveU(-0.1f);
+        camera.moveU(-0.05f);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         // std::cout << "Q key pressed" << std::endl;
-        camera.moveU(0.1f);
+        camera.moveU(0.05f);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         // std::cout << "Space key pressed" << std::endl;
         camera.position = glm::vec3(0.0, 0.0, -3.0);
