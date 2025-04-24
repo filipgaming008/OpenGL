@@ -11,5 +11,5 @@
 #include <stb_image.h>
 
 // Define Some Constants
-const unsigned int SCR_WIDTH = 1600;
-const unsigned int SCR_HEIGHT = 900;
+int SCR_WIDTH = 1600;
+int SCR_HEIGHT = 900;
