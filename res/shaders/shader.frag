@@ -112,7 +112,7 @@ void main(){
 
         float lightsdf = sdSphere(p - lightSource, 20.0);
         if(lightsdf < 0.01){
-            col = vec3(1.0, 0.5, 0.1) * 1.2;
+            col = vec3(1.0, 1.0, 0.1) * 1.5;
         }else{
             // diffuse lighting;
             float diffuseStrenght = max(0.0, dot(normalize(lightSource), n));
@@ -143,7 +143,7 @@ void main(){
             }
         }
     }else{
-        col = vec3(1.0) / dist;
+        col = vec3(0.0, 1.0, 1.0) * 0.08 / dot(rd, vec3(0.0, 1.0, 0.0)) * 0.2;
     }
 
     FragColor = vec4(col,1.0);
