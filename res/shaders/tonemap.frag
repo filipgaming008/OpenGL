@@ -9,7 +9,7 @@ void main() {
     vec3 bloomColor = texture(bloomBuffer, texCoords).rgb;
     
     // Combine with adjustable bloom strength
-    vec3 result = hdrColor + bloomColor * 3.5;
+    vec3 result = hdrColor + bloomColor * 10.0;
 
     // Reinhard tone mapping
     result = result / (result + vec3(1.0));

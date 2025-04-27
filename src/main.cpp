@@ -211,7 +211,7 @@ int main(){
         
         // Gaussian Blur
 
-        int blurPasses = 6;
+        int blurPasses = 8;
         bool horizontal = true;
         for (int i = 0; i < blurPasses; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, scaledFBOs[horizontal]);

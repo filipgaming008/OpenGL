@@ -123,10 +123,10 @@ void main(){
             // specular lighting
             vec3 viewS = normalize(rayOrigin);
             vec3 reflectS = normalize(reflect(-lightSource, n));
-            float specularStrenght = pow(max(0.0, dot(viewS, reflectS)), 32.0);
+            float specularStrenght = pow(max(0.0, dot(viewS, reflectS)), 64.0);
             vec3 specular = specularStrenght * lightColor;
 
-            vec3 lighting = diffuse * 0.75 + specular * 0.25;
+            vec3 lighting = diffuse * 0.7 + specular * 0.3;
 
             col = lighting;
 
@@ -143,7 +143,7 @@ void main(){
             }
         }
     }else{
-        col = vec3(0.0, 1.0, 1.0) * 0.08 / dot(rd, vec3(0.0, 1.0, 0.0)) * 0.2;
+        col = vec3(0.0, 1.0, 1.0) * 0.05 / dot(rd, vec3(0.0, 1.0, 0.0)) * 0.2;
     }
 
     FragColor = vec4(col,1.0);
