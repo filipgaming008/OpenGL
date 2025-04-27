@@ -1,6 +1,3 @@
-// Preprocessor Directives
-#ifndef OpenGL
-#define OpenGL
 #pragma once
 
 // System Headers
@@ -14,7 +11,5 @@
 #include <stb_image.h>
 
 // Define Some Constants
-const int mWidth = 1280;
-const int mHeight = 800;
-
-#endif //~ Glitter Header
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 900;
