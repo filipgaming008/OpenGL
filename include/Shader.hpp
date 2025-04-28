@@ -41,6 +41,9 @@ public:
     // ------------------------------------------------------------------------
     void setVec3f(const std::string &name, float x, float y, float z) const;
 
+    // ------------------------------------------------------------------------
+    void setMat4f(const std::string &name, const float *value) const;
+
 
 private:
     // utility function for checking shader compilation/linking errors.

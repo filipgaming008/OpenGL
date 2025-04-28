@@ -133,6 +133,11 @@ void Shader::setVec3f(const std::string &name, float x, float y, float z) const
 {
     glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 }
+// ------------------------------------------------------------------------
+void Shader::setMat4f(const std::string &name, const float *value) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+}
 
 // utility function for checking shader compilation/linking errors.
 // ------------------------------------------------------------------------
