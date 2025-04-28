@@ -45,7 +45,8 @@ int main(){
     }
 
     std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
-
+    std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
     // Shader's init
     std::string shaders_location("../res/shaders/");
@@ -87,8 +88,8 @@ int main(){
         glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+
         shader1.use();
-        VBO.Bind();
         glBindVertexArray(VAO);
         IBO.Bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
