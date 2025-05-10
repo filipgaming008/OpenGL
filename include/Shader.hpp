@@ -44,6 +44,8 @@ public:
     // ------------------------------------------------------------------------
     void setMat4f(const std::string &name, const float *value) const;
 
+    // ------------------------------------------------------------------------
+    void setMVPMatrices(const float *model, const float *view, const float *projection) const;
 
 private:
     // utility function for checking shader compilation/linking errors.

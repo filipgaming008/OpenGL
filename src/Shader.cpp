@@ -138,6 +138,13 @@ void Shader::setMat4f(const std::string &name, const float *value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
 }
+// ------------------------------------------------------------------------
+void Shader::setMVPMatrices(const float *model, const float *view, const float *projection) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, "model"), 1, GL_FALSE, model);
+    glUniformMatrix4fv(glGetUniformLocation(ID, "view"), 1, GL_FALSE, view);
+    glUniformMatrix4fv(glGetUniformLocation(ID, "projection"), 1, GL_FALSE, projection);
+}
 
 // utility function for checking shader compilation/linking errors.
 // ------------------------------------------------------------------------
