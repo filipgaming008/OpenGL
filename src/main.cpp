@@ -107,6 +107,14 @@ int main(){
     Texture *tex1 = new Texture();
     tex1->loadTexture(textures_location + texture_name);
 
+    TextureParameters texParams;
+    texParams.addParameter<GLint>(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texParams.addParameter<GLint>(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texParams.addParameter<GLint>(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texParams.addParameter<GLint>(GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    tex1->addTextureParameters(texParams);
+
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         

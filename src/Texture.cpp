@@ -6,10 +6,35 @@
 
 #include <iostream>
 
+
+// Texture Parameters
+// -------------------------------------------------
+TextureParameters::~TextureParameters(){
+    parameters.clear();
+}
+
+template<>
+void TextureParameters::addParameter<GLint>(GLenum pname, GLint param){
+    parameters.push_back({pname, param});
+}
+template<>
+void TextureParameters::addParameter<GLfloat>(GLenum pname, GLfloat param){
+    parameters.push_back({pname, param});
+}
+template<>
+void TextureParameters::addParameter<GLuint>(GLenum pname, GLuint param){
+    parameters.push_back({pname, param});
+}
+
+// Texture Class
+// -------------------------------------------------
 Texture::Texture(){
     GLCall(glGenTextures(1, &texture_ID));
 }
 
+Texture::~Texture(){
+    GLCall(glDeleteTextures(1 , &texture_ID));
+}
 
 void Texture::loadTexture(const std::string path){   
     
@@ -41,6 +66,14 @@ void Texture::bindTexture(unsigned int slot){
     GLCall(glBindTexture(GL_TEXTURE_2D, texture_ID));
 }
 
-Texture::~Texture(){
-    GLCall(glDeleteTextures(1 , &texture_ID));
+void Texture::addTextureParameters(const TextureParameters &param){
+    for (const auto& p : param.getParameters()) {
+        if (std::holds_alternative<GLint>(p.param)) {
+            GLCall(glTexParameteri(GL_TEXTURE_2D, p.pname, std::get<GLint>(p.param)));
+        } else if (std::holds_alternative<GLfloat>(p.param)) {
+            GLCall(glTexParameterf(GL_TEXTURE_2D, p.pname, std::get<GLfloat>(p.param)));
+        }else {
+            std::cerr << "Unsupported parameter type for texture: " << p.pname << std::endl;
+        }
+    }
 }

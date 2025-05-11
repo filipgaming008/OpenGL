@@ -27,5 +27,5 @@ void main(){
 
     // Specular light
 
-    FragColor = texture(ourTexture, TexCoord) * vec4(result, 1.0f);
+    FragColor = texture(ourTexture, TexCoord * 4.0f) * vec4(result, 1.0f);
 }
