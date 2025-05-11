@@ -1,1 +1,8 @@
+# Build files
 [Bb]uild/
+
+# Libraries
+/vendor/
+
+# vscode
+/.vscode/
