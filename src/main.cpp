@@ -6,9 +6,8 @@
 #include "Texture.hpp"
 
 // System Headers
-#include <glad/gl.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <assimp/Importer.hpp>
 
 // Standard Headers
 #include <iostream>
@@ -40,7 +39,7 @@ int main(){
 
 
     // Load OpenGL Functions
-    int version = gladLoadGL(glfwGetProcAddress);
+    int version = gladLoadGL();
     if (version == 0) {
         std::cerr << "Failed to initialize OpenGL context" << std::endl;
         return EXIT_FAILURE;
