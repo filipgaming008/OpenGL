@@ -1,6 +1,3 @@
 # Build files
 [Bb]uild/
 [Bb]in/
-
-# Dependency directories
-vendor/
