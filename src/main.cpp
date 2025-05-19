@@ -4,6 +4,7 @@
 #include "Renderer.hpp"
 #include "Buffers.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 // System Headers
 #include <glad/glad.h>
@@ -14,10 +15,14 @@
 #include <vector>
 
 // Function Prototypes
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow * window);
-double getDeltaTime();
+void getDeltaTime();
 
+
+Camera camera;
+glm::vec2 cursorPos = glm::vec2(0.0f, 0.0f);
 
 int main(){
 
@@ -36,7 +41,8 @@ int main(){
         return EXIT_FAILURE;
     }
     glfwMakeContextCurrent(Window);
-
+    
+    glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Load OpenGL Functions
     int version = gladLoadGL();
@@ -56,7 +62,7 @@ int main(){
 
     Shader shader1(shaders_location + shader_name + ".vert", shaders_location + shader_name + ".frag");
 
-
+    
     // Vertex Data for a Plane with Normals and UV Coordinates
     std::vector<float> vertices = {
         // Positions           // Normals         // UV Coordinates
@@ -79,25 +85,20 @@ int main(){
     layout->Push<float>(3); // Normal
     layout->Push<float>(2); // UV
     
-    VertexBuffer *VBO = new VertexBuffer(vertices.data(), vertices.size() * sizeof(float));
+    VertexBuffer *VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
     
     VertexArray *VAO = new VertexArray();
     VAO->AddBuffer(*VBO, *layout);
 
-    IndexBuffer *IBO = new IndexBuffer(indices.data(), indices.size());
+    IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
 
 
     // View, Model and Projection Matrices
     //-------------------------------------------------
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    
-    glm::vec3 lightPos;
+    glm::dvec3 lightPos; 
 
 
     // Textures init
@@ -118,30 +119,34 @@ int main(){
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         
+        getDeltaTime();
         // Process Input
         processInput(Window);
+        cursor_position_callback(Window, cursorPos.x, cursorPos.y);
+        camera.MouseUpdate(cursorPos, deltaTime);
+        camera.Update();
         
         // Background Fill Color
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+
         
         // Draw
-        model = glm::rotate(model, (float)getDeltaTime() * glm::radians(25.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, (float)deltaTime * glm::radians(25.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         
-        lightPos.x = 5.0f * sin(glfwGetTime() * 0.5f);
-        lightPos.z = 5.0f * cos(glfwGetTime() * 0.5f);
+        lightPos.x = 5.0 * sin(glfwGetTime() * 0.5f);
+        lightPos.z = 5.0 * cos(glfwGetTime() * 0.5f);
         
         shader1.use();
         tex1->bindTexture();
-        shader1.setMVPMatrices(glm::value_ptr(model), glm::value_ptr(view), glm::value_ptr(projection));
-        shader1.setVec3f("lightPos", lightPos.x, 2.0f, lightPos.z);
-        shader1.setFloat("Time", (float)glfwGetTime());
+        shader1.setMVPMatrices(glm::value_ptr(model), glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()));
+        shader1.setVec3f("lightPos", (float)lightPos.x, 2.0f, (float)lightPos.z);
+        shader1.setFloat("Time", (float)deltaTime);
         
         VAO->Bind();
         IBO->Bind();
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
-        
+        glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
 
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);
@@ -159,19 +164,43 @@ int main(){
     return EXIT_SUCCESS;
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    cursorPos.x = (float)xpos;
+    cursorPos.y = (float)ypos;
+}
+
 void processInput(GLFWwindow * window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+        camera.PositionUpdate(FORWARD, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
+        camera.PositionUpdate(BACKWARD, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
+        camera.PositionUpdate(LEFT, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
+        camera.PositionUpdate(RIGHT, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+        camera.PositionUpdate(UP, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
+        camera.PositionUpdate(DOWN, deltaTime);
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    (void) window;
     glViewport(0, 0, width, height);
 }
 
-double getDeltaTime() {
-    static double lastTime = 0.0;
+void getDeltaTime() {
     double currentTime = glfwGetTime();
-    double deltaTime = currentTime - lastTime;
+    deltaTime = currentTime - lastTime;
     lastTime = currentTime;
-    return deltaTime;
 }

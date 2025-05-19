@@ -12,6 +12,8 @@
 // #include <stb_image.h>
 
 // Define Some Constants
+static double lastTime = 0.0;
+static double deltaTime = 0.0;
 const std::string name = "OpenGL";
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
