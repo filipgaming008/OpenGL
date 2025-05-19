@@ -20,10 +20,15 @@ void Camera::MouseUpdate(glm::vec2 &mousePos, double m_deltaTime){
 
     glm::quat q = glm::angleAxis(-delta.x, up) * glm::angleAxis(delta.y, right);
 
+    // Prevents gimbal lock
     front = glm::normalize(q * front);
-    front = glm::normalize(glm::vec3(front.x, glm::clamp(front.y, -0.9f, 0.9f), front.z));
-    right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
-    up = glm::normalize(glm::cross(front, right));
+    right = glm::normalize(q * right);
+    up = glm::normalize(q * up);
+
+    // With gimbal lock
+    // front = glm::normalize(glm::vec3(front.x, glm::clamp(front.y, -0.9f, 0.9f), front.z));
+    // right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+    // up = glm::normalize(glm::cross(front, right));
 
     lastMousePos = mousePos;
 }
