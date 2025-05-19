@@ -123,7 +123,7 @@ int main(){
         // Process Input
         processInput(Window);
         cursor_position_callback(Window, cursorPos.x, cursorPos.y);
-        camera.MouseUpdate(cursorPos, deltaTime);
+        camera.MouseUpdate(cursorPos);
         camera.Update();
         
         // Background Fill Color
@@ -175,23 +175,29 @@ void processInput(GLFWwindow * window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
-        camera.PositionUpdate(FORWARD, deltaTime);
+        camera.PositionUpdate(FORWARD);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
-        camera.PositionUpdate(BACKWARD, deltaTime);
+        camera.PositionUpdate(BACKWARD);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
-        camera.PositionUpdate(LEFT, deltaTime);
+        camera.PositionUpdate(LEFT);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
-        camera.PositionUpdate(RIGHT, deltaTime);
+        camera.PositionUpdate(RIGHT);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
-        camera.PositionUpdate(UP, deltaTime);
+        camera.PositionUpdate(UP);
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
-        camera.PositionUpdate(DOWN, deltaTime);
+        camera.PositionUpdate(DOWN);
     }
+    // if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS){
+    //     camera.Tilt(0.1f);
+    // }
+    // if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS){
+    //     camera.Tilt(-0.1f);
+    // }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {

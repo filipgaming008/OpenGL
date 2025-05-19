@@ -30,8 +30,9 @@ public:
 
     void Update();
     void LookAt(const glm::vec3 &target);
-    void MouseUpdate(glm::vec2 &mousePos, double m_deltaTime);
-    void PositionUpdate(enum CameraMovement direction, double m_deltaTime);
+    void MouseUpdate(glm::vec2 &mousePos);
+    void PositionUpdate(enum CameraMovement direction);
+    // void Tilt(float angle);
 
     glm::mat4 GetViewMatrix() const;
     glm::mat4 GetProjectionMatrix() const;
