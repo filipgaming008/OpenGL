@@ -5,6 +5,7 @@
 #include "Buffers.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
+#include "Model.hpp"
 
 // System Headers
 #include <glm/gtc/type_ptr.hpp>
@@ -57,60 +58,45 @@ int main(){
 
     Shader shader1(shaders_location + shader_name + ".vert", shaders_location + shader_name + ".frag");
 
+    Shader lightShader(shaders_location + "light.vert", shaders_location + "light.frag");
+
     
     // Vertex Data for a Plane with Normals and UV Coordinates
-    std::vector<float> vertices = {
-        // Positions           // Normals         // UV Coordinates
-        -0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 0.0f, // Bottom-left
-         0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 0.0f, // Bottom-right
-         0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 1.0f, // Top-right
-        -0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 1.0f  // Top-left
-    };
+    // std::vector<float> vertices = {
+    //     // Positions           // Normals         // UV Coordinates
+    //     -0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 0.0f, // Bottom-left
+    //      0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 0.0f, // Bottom-right
+    //      0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 1.0f, // Top-right
+    //     -0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 1.0f  // Top-left
+    // };
 
-    std::vector<unsigned int> indices = {
-        // Plane face
-        0, 1, 2,
-        0, 2, 3
-    };
+    // std::vector<unsigned int> indices = {
+    //     // Plane face
+    //     0, 1, 2,
+    //     0, 2, 3
+    // };
 
 
     // Buffers
-    VertexLayout *layout = new VertexLayout();
-    layout->Push<float>(3); // Position
-    layout->Push<float>(3); // Normal
-    layout->Push<float>(2); // UV
+    // VertexLayout *layout = new VertexLayout();
+    // layout->Push<float>(3); // Position
+    // layout->Push<float>(3); // Normal
+    // layout->Push<float>(2); // UV
     
-    VertexBuffer *VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
+    // VertexBuffer *VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
     
-    VertexArray *VAO = new VertexArray();
-    VAO->AddBuffer(*VBO, *layout);
+    // VertexArray *VAO = new VertexArray();
+    // VAO->AddBuffer(*VBO, *layout);
 
-    IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
+    // IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
 
+    // Light Position
+    glm::dvec3 lightPos = glm::dvec3(0.0f, 0.0f, 0.0f); 
 
-    // View, Model and Projection Matrices
-    //-------------------------------------------------
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Model *model1 = new Model(SPHERE);
+    Model *model2 = new Model(CUBE);
+    Model *lightModel = new Model(SPHERE); 
     
-    glm::dvec3 lightPos; 
-
-
-    // Textures init
-    std::string textures_location("../res/textures/");
-    std::string texture_name("wheel.png");
-
-    Texture *tex1 = new Texture();
-    tex1->loadTexture(textures_location + texture_name);
-
-    TextureParameters texParams;
-    texParams.addParameter<GLint>(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texParams.addParameter<GLint>(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texParams.addParameter<GLint>(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texParams.addParameter<GLint>(GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    tex1->addTextureParameters(texParams);
-
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         
@@ -118,43 +104,57 @@ int main(){
         // Process Input
         processInput(Window);
         cursor_position_callback(Window, cursorPos.x, cursorPos.y);
-
+        
         camera.MouseUpdate(cursorPos);
         camera.Update();
         
         // Background Fill Color
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
-
+        glDepthFunc(GL_LESS);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
         
         // Draw
-        // model = glm::rotate(model, (float)getDeltaTime() * glm::radians(25.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        //-------------------------------------------------------------
+        lightPos.x = 5.0 * sin(glfwGetTime() * 0.1f);
+        lightPos.y = 5.0 * cos(glfwGetTime() * 0.1f);
         
-        lightPos.x = 5.0 * sin(glfwGetTime() * 0.5f);
-        lightPos.z = 5.0 * cos(glfwGetTime() * 0.5f);
+        lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(lightPos.x, lightPos.y, lightPos.z)));
+        lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.3f)));
+        lightModel->Draw(lightShader, camera);
         
         shader1.use();
-        tex1->bindTexture();
-        shader1.setMVPMatrices(glm::value_ptr(model), glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()));
-        shader1.setVec3f("lightPos", (float)lightPos.x, 2.0f, (float)lightPos.z);
+        shader1.setVec3f("lightPos", (float)lightPos.x, (float)lightPos.y, (float)lightPos.z);
         shader1.setFloat("Time", (float)getDeltaTime());
+        shader1.setVec3f("viewDir", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
         
-        VAO->Bind();
-        IBO->Bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
-
+        glDisable(GL_BLEND);
+        shader1.setVec4f("objectColor", 0.8f, 0.1f, 0.1f, 1.0f);
+        model2->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 5.0f)));
+        model2->Draw(shader1, camera);
+        
+        glEnable(GL_BLEND);
+        shader1.use();
+        shader1.setVec4f("objectColor", 0.1f, 0.8f, 0.3f, 0.5f);
+        model1->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 2.0f)));
+        model1->Draw(shader1, camera);
+        
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);
         glfwPollEvents();
     }   
-
+    
     // Cleanup
-    delete tex1;
-    delete layout;
-    delete VAO;
-    delete VBO;
-    delete IBO;
+    delete model1;
+    delete model2;
+    delete lightModel;
+    // delete layout;
+    // delete VAO;
+    // delete VBO;
+    // delete IBO;
     
     glfwTerminate();
     return EXIT_SUCCESS;

@@ -12,7 +12,7 @@ Camera::Camera()
         front = glm::vec3(0.0f, 0.0f, -1.0f);
         right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
         up = glm::normalize(glm::cross(front, right));
-        viewMatrix = glm::lookAt(position, position + front, up);
+        viewMatrix = glm::lookAt(position, glm::vec3(0.0f, 0.0f, 1.0f), up);
     }
 
 void Camera::MouseUpdate(glm::vec2 &mousePos){

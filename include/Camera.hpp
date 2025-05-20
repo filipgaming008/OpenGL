@@ -36,4 +36,6 @@ public:
 
     glm::mat4 GetViewMatrix() const;
     glm::mat4 GetProjectionMatrix() const;
+    inline glm::vec3 GetPosition() const { return position; }
+    inline glm::vec3 GetFront() const { return front; }
 };
