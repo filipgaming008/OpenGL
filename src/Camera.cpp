@@ -2,6 +2,7 @@
 
 #include "OpenGL.hpp"
 #include "glm/gtc/quaternion.hpp"
+#include <iostream>
 
 Camera::Camera() 
     : position(glm::vec3(0.0f, 0.0f, -3.0f)), 
@@ -11,12 +12,12 @@ Camera::Camera()
         front = glm::vec3(0.0f, 0.0f, -1.0f);
         right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
         up = glm::normalize(glm::cross(front, right));
-        viewMatrix = glm::lookAt(position, glm::vec3(0.0f, 0.0f, 0.0f), up);
+        viewMatrix = glm::lookAt(position, position + front, up);
     }
 
 void Camera::MouseUpdate(glm::vec2 &mousePos){
     glm::vec2 delta = mousePos - lastMousePos;
-    delta *= sensitivity * (float)deltaTime;
+    delta *= sensitivity * (float)getDeltaTime();
 
     glm::quat q = glm::angleAxis(-delta.x, up) * glm::angleAxis(delta.y, right);
 
@@ -48,7 +49,7 @@ glm::mat4 Camera::GetProjectionMatrix() const {
 }
 
 void Camera::PositionUpdate(enum CameraMovement direction){
-    float velocity = speed * (float)deltaTime;
+    float velocity = speed * (float)getDeltaTime();
     switch (direction){
         case FORWARD: position += front * velocity; break;
         case BACKWARD: position -= front * velocity; break;
@@ -59,9 +60,10 @@ void Camera::PositionUpdate(enum CameraMovement direction){
     }
 }
 
-// void Camera::Tilt(float angle){
-//     glm::quat q = glm::angleAxis(glm::radians(angle), front);
-//     front = glm::normalize(q * front);
-//     right = glm::normalize(q * right);
-//     up = glm::normalize(q * up);
-// }
+void Camera::Tilt(float _angle){
+    float angle = _angle * (float)getDeltaTime();
+    glm::quat q = glm::angleAxis(glm::radians(angle), front);
+    front = glm::normalize(q * front);
+    right = glm::normalize(q * right);
+    up = glm::normalize(q * up);
+}

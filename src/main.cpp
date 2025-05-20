@@ -7,19 +7,14 @@
 #include "Camera.hpp"
 
 // System Headers
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 
 // Standard Headers
 #include <iostream>
 #include <vector>
 
-// Function Prototypes
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow * window);
-void getDeltaTime();
-
+double lastTime = 0.0;
+double deltaTime = 0.0;
 
 Camera camera;
 glm::vec2 cursorPos = glm::vec2(0.0f, 0.0f);
@@ -119,10 +114,11 @@ int main(){
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         
-        getDeltaTime();
+        DeltaTime();
         // Process Input
         processInput(Window);
         cursor_position_callback(Window, cursorPos.x, cursorPos.y);
+
         camera.MouseUpdate(cursorPos);
         camera.Update();
         
@@ -133,7 +129,7 @@ int main(){
 
         
         // Draw
-        model = glm::rotate(model, (float)deltaTime * glm::radians(25.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        // model = glm::rotate(model, (float)getDeltaTime() * glm::radians(25.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         
         lightPos.x = 5.0 * sin(glfwGetTime() * 0.5f);
         lightPos.z = 5.0 * cos(glfwGetTime() * 0.5f);
@@ -142,7 +138,7 @@ int main(){
         tex1->bindTexture();
         shader1.setMVPMatrices(glm::value_ptr(model), glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()));
         shader1.setVec3f("lightPos", (float)lightPos.x, 2.0f, (float)lightPos.z);
-        shader1.setFloat("Time", (float)deltaTime);
+        shader1.setFloat("Time", (float)getDeltaTime());
         
         VAO->Bind();
         IBO->Bind();
@@ -192,12 +188,12 @@ void processInput(GLFWwindow * window) {
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
         camera.PositionUpdate(DOWN);
     }
-    // if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS){
-    //     camera.Tilt(0.1f);
-    // }
-    // if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS){
-    //     camera.Tilt(-0.1f);
-    // }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS){
+        camera.Tilt(90.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS){
+        camera.Tilt(-90.0f);
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -205,8 +201,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void getDeltaTime() {
+void DeltaTime() {
     double currentTime = glfwGetTime();
     deltaTime = currentTime - lastTime;
     lastTime = currentTime;
+}
+
+double getDeltaTime() {
+    return deltaTime;
 }
