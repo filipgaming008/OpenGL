@@ -98,13 +98,17 @@ int main(){
     //-------------------------------------------------------------
     Model *model1 = new Model(SPHERE);
     Model *model2 = new Model(CUBE);
-    Model *lightModel = new Model(SPHERE); 
+    Model *lightModel = new Model(SPHERE);
 
     Light light;
     light.pos = glm::vec3(0.0f, 0.0f, 0.0f);
     light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
     light.diffuse = glm::vec3(0.7f, 0.7f, 0.7f);
     light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    Light light2;
+    light2.pos = glm::vec3(0.0f, -3.0f, 0.0f);
+    light2.ambient = glm::vec3(35.0f, 32.0f, 33.0f);
 
     Material material1;
     material1.ambient = glm::vec4(0.8f, 0.2f, 0.2f, 1.0f);
@@ -126,7 +130,7 @@ int main(){
 
     Model *plane = new Model(PLANE);
     plane->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 0.0f))
-    * glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)));
+    * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f)));
 
     // Textures
     //-------------------------------------------------------------
@@ -177,9 +181,15 @@ int main(){
         // Set light position and draw the light source
         light.pos.x = (float)sin(glfwGetTime() * 0.3f) * 2.0f;
         light.pos.y = (float)cos(glfwGetTime() * 0.3f) * 2.0f;
-        
+        light2.pos.x = (float)sin(glfwGetTime() * 0.3f) * 3.0f + 10.0f;
+        light2.pos.z = (float)cos(glfwGetTime() * 0.3f) * 3.0f;
+
         lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(light.pos.x, light.pos.y, light.pos.z)));
-        lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.3f)));
+        lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.2f)));
+        lightModel->Draw(lightShader, camera);
+
+        lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(light2.pos.x, light2.pos.y, light2.pos.z)));
+        lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.2f)));
         lightModel->Draw(lightShader, camera);
 
         shader1.use();
@@ -202,9 +212,10 @@ int main(){
         PBRShader.setInt("material.roughnessMap", 3);
         PBRShader.setInt("material.aoMap", 4);
         PBRShader.setInt("material.heightMap", 5);
-        PBRShader.setFloat("material.heightScale", 0.1f);
+        PBRShader.setFloat("material.heightScale", 0.15f);
         PBRShader.setVec3f("viewPos", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
-        PBRShader.setVec3f("lightPos", 9.0f, -2.0f, 1.0f);
+        PBRShader.setVec3f("lightPos", light2.pos.x, light2.pos.y, light2.pos.z);
+        PBRShader.setVec3f("lightColor", light2.ambient.r, light2.ambient.g, light2.ambient.b);
         plane->Draw(PBRShader, camera);
 
         shader1.use();
@@ -230,7 +241,7 @@ int main(){
         model1->Draw(shader1, camera);
         
         // Post processing
-
+        
 
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);

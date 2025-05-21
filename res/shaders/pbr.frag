@@ -23,6 +23,7 @@ struct Material {
 uniform Material material;
 
 uniform vec3 viewPos;
+uniform vec3 lightColor;
 uniform vec3 lightPos;
 
 const float PI = 3.14159265359;
@@ -127,7 +128,7 @@ void main(){
 
     float distance = length(lightPos - fs_in.FragPos);
     float attenuation = 1.0 / (distance * distance);
-    vec3 radiance = vec3(23.47, 21.31, 20.79) * attenuation;
+    vec3 radiance = lightColor * attenuation;
 
     float NDF = DistributionGGX(N, H, roughness);
     float G = GeometrySmith(N, V, L, roughness);
