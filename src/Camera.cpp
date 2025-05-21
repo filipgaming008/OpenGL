@@ -5,14 +5,10 @@
 #include <iostream>
 
 Camera::Camera() 
-    : position(glm::vec3(0.0f, 0.0f, -2.0f)), 
-    projectionMatrix(glm::perspective(glm::radians(90.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f)),
+    : projectionMatrix(glm::perspective(glm::radians(90.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f)),
     lastMousePos(glm::vec2(0.0f))
     {   
-        front = glm::vec3(0.0f, 0.0f, 1.0f);
-        right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
-        up = glm::normalize(glm::cross(front, right));
-        viewMatrix = glm::lookAt(position, glm::vec3(0.0f, 0.0f, 1.0f), up);
+        Reset();
     }
 
 void Camera::MouseUpdate(glm::vec2 &mousePos){

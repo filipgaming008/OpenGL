@@ -51,7 +51,8 @@ int main(){
     std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
-
+    // Start Scope
+    {
     // Shaders init
     std::string shaders_location("../res/shaders/");
     std::string shader_name("shader");
@@ -59,6 +60,8 @@ int main(){
     Shader shader1(shaders_location + shader_name + ".vert", shaders_location + shader_name + ".frag");
 
     Shader lightShader(shaders_location + "light.vert", shaders_location + "light.frag");
+
+    Shader PBRShader(shaders_location + "pbr.vert", shaders_location + "pbr.frag");
 
     
     // Vertex Data for a Plane with Normals and UV Coordinates
@@ -90,6 +93,9 @@ int main(){
 
     // IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
 
+
+    // Models, Light and Materials
+    //-------------------------------------------------------------
     Model *model1 = new Model(SPHERE);
     Model *model2 = new Model(CUBE);
     Model *lightModel = new Model(SPHERE); 
@@ -117,7 +123,34 @@ int main(){
     material3.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
     material3.specular = glm::vec3(1.0f, 1.0f, 1.0f);
     material3.shine = 32.0f;
-    
+
+    Model *plane = new Model(PLANE);
+    plane->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 0.0f))
+    * glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)));
+
+    // Textures
+    //-------------------------------------------------------------
+
+    std::string textures_location("../res/textures/");
+
+    Texture pbrAlbedo;
+    pbrAlbedo.loadTexture(textures_location + "base.png");
+
+    Texture pbrNormal;
+    pbrNormal.loadTexture(textures_location + "normal.png");
+
+    Texture pbrMetallic;
+    pbrMetallic.loadTexture(textures_location + "metallic.png");
+
+    Texture pbrRoughness;
+    pbrRoughness.loadTexture(textures_location + "roughness.png");
+
+    Texture pbrAO;
+    pbrAO.loadTexture(textures_location + "ambient.png");
+
+    Texture pbrHeight;
+    pbrHeight.loadTexture(textures_location + "height.png");
+
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         
@@ -130,7 +163,7 @@ int main(){
         camera.Update();
         
         // Background Fill Color
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -138,21 +171,42 @@ int main(){
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
         
-        // Draw
+        // Drawing
         //-------------------------------------------------------------
-        light.pos.x = 2.0 * sin(glfwGetTime() * 0.3f);
-        light.pos.y = 2.0 * cos(glfwGetTime() * 0.3f);
+        
+        // Set light position and draw the light source
+        light.pos.x = (float)sin(glfwGetTime() * 0.3f) * 2.0f;
+        light.pos.y = (float)cos(glfwGetTime() * 0.3f) * 2.0f;
         
         lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(light.pos.x, light.pos.y, light.pos.z)));
         lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.3f)));
         lightModel->Draw(lightShader, camera);
-        
+
         shader1.use();
         shader1.setVec3f("viewPos", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
         
         // Draw opaque objects first
         glDisable(GL_BLEND);
+
         
+        PBRShader.use();
+        pbrAlbedo.bindTexture(0);
+        pbrNormal.bindTexture(1);
+        pbrMetallic.bindTexture(2);
+        pbrRoughness.bindTexture(3);
+        pbrAO.bindTexture(4);
+        pbrHeight.bindTexture(5);
+        PBRShader.setInt("material.albedoMap", 0);
+        PBRShader.setInt("material.normalMap", 1);
+        PBRShader.setInt("material.metallicMap", 2);
+        PBRShader.setInt("material.roughnessMap", 3);
+        PBRShader.setInt("material.aoMap", 4);
+        PBRShader.setInt("material.heightMap", 5);
+        PBRShader.setFloat("material.heightScale", 0.1f);
+        PBRShader.setVec3f("viewPos", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+        PBRShader.setVec3f("lightPos", 9.0f, -2.0f, 1.0f);
+        plane->Draw(PBRShader, camera);
+
         shader1.use();
         shader1.setMaterial("material", &material1.ambient[0], &material1.diffuse[0], &material1.specular[0], material1.shine);
         shader1.setLight("light", &light.pos[0], &light.ambient[0], &light.diffuse[0], &light.specular[0]);
@@ -176,7 +230,7 @@ int main(){
         model1->Draw(shader1, camera);
         
         // Post processing
-        
+
 
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);
@@ -186,11 +240,15 @@ int main(){
     // Cleanup
     delete model1;
     delete model2;
+    delete plane;
     delete lightModel;
     // delete layout;
     // delete VAO;
     // delete VBO;
     // delete IBO;
+
+    // End Scope
+    }
     
     glfwTerminate();
     return EXIT_SUCCESS;

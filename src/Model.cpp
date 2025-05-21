@@ -102,11 +102,11 @@ void Model::Cube()
 void Model::Plane()
 {
     std::vector<float> vertices = {
-        // Positions           // Normals         // UV Coordinates
-        -0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 0.0f,
-         0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 0.0f,
-         0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 1.0f,
-        -0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 1.0f
+        // Positions           // Normals             // UVs      // Tangent
+         0.5f,  0.0f,  0.5f,    0.0f, -1.0f, 0.0f,   1.0f, 1.0f,  1.0f, 0.0f, 0.0f, // 0
+         0.5f,  0.0f, -0.5f,    0.0f, -1.0f, 0.0f,   1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // 1
+        -0.5f,  0.0f, -0.5f,    0.0f, -1.0f, 0.0f,   0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // 2
+        -0.5f,  0.0f,  0.5f,    0.0f, -1.0f, 0.0f,   0.0f, 1.0f,  1.0f, 0.0f, 0.0f, // 3
     };
 
     std::vector<unsigned int> indices = {
@@ -118,6 +118,7 @@ void Model::Plane()
     layout->Push<float>(3); // Position
     layout->Push<float>(3); // Normal
     layout->Push<float>(2); // UV
+    layout->Push<float>(3); // Tangent
 
     VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
     VAO = new VertexArray();
@@ -127,8 +128,8 @@ void Model::Plane()
 
 void Model::Sphere()
 {
-    const unsigned int sectorCount = 36 * 2;  // Longitude segments
-    const unsigned int stackCount = 18 * 2;   // Latitude segments
+    const unsigned int sectorCount = 72;  // Longitude segments
+    const unsigned int stackCount = 36;   // Latitude segments
     const float radius = 0.5f;
     const float PI = glm::pi<float>();
 

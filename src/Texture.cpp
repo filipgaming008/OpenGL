@@ -54,7 +54,19 @@ void Texture::loadTexture(const std::string path){
         return;
     }
 
-    GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+    GLenum format;
+    if (nrChannels == 1) {
+        format = GL_RED;
+    } else if (nrChannels == 3) {
+        format = GL_RGB;
+    } else if (nrChannels == 4) {
+        format = GL_RGBA;
+    } else {
+        std::cerr << "Unsupported number of channels: " << nrChannels << std::endl;
+        stbi_image_free(data);
+        return;
+    }
+
     GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data));
     GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
