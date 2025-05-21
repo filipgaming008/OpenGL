@@ -50,6 +50,12 @@ public:
     // ------------------------------------------------------------------------
     void setMVPMatrices(const float *model, const float *view, const float *projection) const;
 
+    //------------------------------------------------------------------------
+    void setMaterial(const std::string &name, const float *ambient, const float *diffuse, const float *specular, float shine) const;
+
+    //------------------------------------------------------------------------
+    void setLight(const std::string &name, const float *pos, const float *ambient, const float *diffuse, const float *specular) const;
+
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------

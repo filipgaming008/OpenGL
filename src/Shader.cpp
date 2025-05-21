@@ -150,6 +150,22 @@ void Shader::setMVPMatrices(const float *model, const float *view, const float *
     glUniformMatrix4fv(glGetUniformLocation(ID, "view"), 1, GL_FALSE, view);
     glUniformMatrix4fv(glGetUniformLocation(ID, "projection"), 1, GL_FALSE, projection);
 }
+// ------------------------------------------------------------------------
+void Shader::setMaterial(const std::string &name, const float *ambient, const float *diffuse, const float *specular, float shine) const
+{
+    glUniform4f(glGetUniformLocation(ID, (name + ".ambient").c_str()), ambient[0], ambient[1], ambient[2], ambient[3]);
+    glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), diffuse[0], diffuse[1], diffuse[2]);
+    glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), specular[0], specular[1], specular[2]);
+    glUniform1f(glGetUniformLocation(ID, (name + ".shine").c_str()), shine);
+}
+// ------------------------------------------------------------------------
+void Shader::setLight(const std::string &name, const float *pos, const float *ambient, const float *diffuse, const float *specular) const
+{
+    glUniform3f(glGetUniformLocation(ID, (name + ".pos").c_str()), pos[0], pos[1], pos[2]);
+    glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), ambient[0], ambient[1], ambient[2]);
+    glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), diffuse[0], diffuse[1], diffuse[2]);
+    glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), specular[0], specular[1], specular[2]);
+}
 
 // utility function for checking shader compilation/linking errors.
 // ------------------------------------------------------------------------

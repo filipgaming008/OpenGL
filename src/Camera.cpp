@@ -5,11 +5,11 @@
 #include <iostream>
 
 Camera::Camera() 
-    : position(glm::vec3(0.0f, 0.0f, -3.0f)), 
+    : position(glm::vec3(0.0f, 0.0f, -2.0f)), 
     projectionMatrix(glm::perspective(glm::radians(90.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f)),
     lastMousePos(glm::vec2(0.0f))
     {   
-        front = glm::vec3(0.0f, 0.0f, -1.0f);
+        front = glm::vec3(0.0f, 0.0f, 1.0f);
         right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
         up = glm::normalize(glm::cross(front, right));
         viewMatrix = glm::lookAt(position, glm::vec3(0.0f, 0.0f, 1.0f), up);
@@ -38,8 +38,16 @@ void Camera::Update(){
     viewMatrix = glm::lookAt(position, position + front, up);
 }
 
+void Camera::Reset(){
+    position = glm::vec3(0.0f, 0.0f, -2.0f);
+    LookAt(glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
 void Camera::LookAt(const glm::vec3 &target){
     viewMatrix = glm::lookAt(position, target, up);
+    front = glm::normalize(target - position);
+    right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+    up = glm::normalize(glm::cross(front, right));
 }
 glm::mat4 Camera::GetViewMatrix() const {
     return viewMatrix;

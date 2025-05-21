@@ -6,7 +6,25 @@
 #include "Camera.hpp"
 
 
+//-------------------------------------------
+// Materials and light
+struct Material{
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shine;
+};
 
+struct Light{
+    glm::vec3 pos;
+
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
+//-------------------------------------------
+// Model
 enum ModelType{
     CUBE = 1,
     PLANE,

@@ -90,12 +90,33 @@ int main(){
 
     // IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
 
-    // Light Position
-    glm::dvec3 lightPos = glm::dvec3(0.0f, 0.0f, 0.0f); 
-
     Model *model1 = new Model(SPHERE);
     Model *model2 = new Model(CUBE);
     Model *lightModel = new Model(SPHERE); 
+
+    Light light;
+    light.pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+    light.diffuse = glm::vec3(0.7f, 0.7f, 0.7f);
+    light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    Material material1;
+    material1.ambient = glm::vec4(0.8f, 0.2f, 0.2f, 1.0f);
+    material1.diffuse = glm::vec3(0.8f, 0.1f, 0.1f);
+    material1.specular = glm::vec3(0.5f, 0.5f, 0.5f);
+    material1.shine = 32.0f;
+
+    Material material2;
+    material2.ambient = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f);
+    material2.diffuse = glm::vec3(0.2f, 0.2f, 0.8f);
+    material2.specular = glm::vec3(0.5f, 0.5f, 0.5f);
+    material2.shine = 32.0f;
+
+    Material material3;
+    material3.ambient = glm::vec4(0.1f, 0.8f, 0.3f, 0.5f);
+    material3.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+    material3.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    material3.shine = 32.0f;
     
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
@@ -119,29 +140,44 @@ int main(){
         
         // Draw
         //-------------------------------------------------------------
-        lightPos.x = 5.0 * sin(glfwGetTime() * 0.1f);
-        lightPos.y = 5.0 * cos(glfwGetTime() * 0.1f);
+        light.pos.x = 2.0 * sin(glfwGetTime() * 0.3f);
+        light.pos.y = 2.0 * cos(glfwGetTime() * 0.3f);
         
-        lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(lightPos.x, lightPos.y, lightPos.z)));
+        lightModel->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(light.pos.x, light.pos.y, light.pos.z)));
         lightModel->SetModelMatrix(glm::scale(lightModel->GetModelMatrix(), glm::vec3(0.3f)));
         lightModel->Draw(lightShader, camera);
         
         shader1.use();
-        shader1.setVec3f("lightPos", (float)lightPos.x, (float)lightPos.y, (float)lightPos.z);
-        shader1.setFloat("Time", (float)getDeltaTime());
-        shader1.setVec3f("viewDir", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+        shader1.setVec3f("viewPos", camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
         
+        // Draw opaque objects first
         glDisable(GL_BLEND);
-        shader1.setVec4f("objectColor", 0.8f, 0.1f, 0.1f, 1.0f);
-        model2->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 5.0f)));
+        
+        shader1.use();
+        shader1.setMaterial("material", &material1.ambient[0], &material1.diffuse[0], &material1.specular[0], material1.shine);
+        shader1.setLight("light", &light.pos[0], &light.ambient[0], &light.diffuse[0], &light.specular[0]);
+        model2->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.0f)) 
+        * glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() * 0.5f, glm::normalize(-glm::vec3(1.0f, 1.0f, 0.0f))));
         model2->Draw(shader1, camera);
         
+        shader1.use();
+        shader1.setMaterial("material", &material2.ambient[0], &material2.diffuse[0], &material2.specular[0], material2.shine);
+        shader1.setLight("light", &light.pos[0], &light.ambient[0], &light.diffuse[0], &light.specular[0]);
+        model2->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 3.0f)));
+        model2->Draw(shader1, camera);
+
+        // Draw transparent objects
         glEnable(GL_BLEND);
         shader1.use();
-        shader1.setVec4f("objectColor", 0.1f, 0.8f, 0.3f, 0.5f);
-        model1->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 2.0f)));
+        shader1.setMaterial("material", &material3.ambient[0], &material3.diffuse[0], &material3.specular[0], material3.shine);
+        shader1.setLight("light", &light.pos[0], &light.ambient[0], &light.diffuse[0], &light.specular[0]);
+        model1->SetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 2.0f)) 
+        * glm::scale(glm::mat4(1.0f), glm::vec3((float)sin(glfwGetTime()) * 0.5f + 1.0f)));
         model1->Draw(shader1, camera);
         
+        // Post processing
+        
+
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);
         glfwPollEvents();
@@ -193,6 +229,9 @@ void processInput(GLFWwindow * window) {
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS){
         camera.Tilt(-90.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS){
+        camera.Reset();
     }
 }
 

@@ -166,8 +166,11 @@ void Model::Sphere()
             float y = xy * sinTheta[j];
             vertices.insert(vertices.end(), {x, y, z});
 
-            // Normal (normalized position)
-            vertices.insert(vertices.end(), {x/radius, y/radius, z/radius});
+            // Normal (unit vector from sphere center)
+            float nx = cosPhi[i] * cosTheta[j];
+            float ny = cosPhi[i] * sinTheta[j];
+            float nz = sinPhi[i];
+            vertices.insert(vertices.end(), {nx, ny, nz});
 
             // UV coordinates (flipped V for OpenGL texture origin)
             float u = static_cast<float>(j) / sectorCount;
