@@ -3,6 +3,8 @@
 #include "Buffers.hpp"
 #include "Renderer.hpp"
 
+#include "OpenGL.hpp"
+
 
 // VertexBuffer
 // -------------------------------------------------
@@ -101,4 +103,63 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexLayout& layout){
         GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (const void*)(uintptr_t)offset));
         offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
     }
+}
+
+
+// Depth Buffer
+// -------------------------------------------------
+DepthBuffer::DepthBuffer(){
+    GLCall(glGenRenderbuffers(1, &Renderer_ID));
+    GLCall(glBindRenderbuffer(GL_RENDERBUFFER, Renderer_ID));
+    GLCall(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT));
+    GLCall(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, Renderer_ID));
+};
+
+DepthBuffer::~DepthBuffer(){
+    GLCall(glDeleteRenderbuffers(1, &Renderer_ID));
+}
+
+void DepthBuffer::Bind() const{
+    GLCall(glBindRenderbuffer(GL_RENDERBUFFER, Renderer_ID));
+}
+
+void DepthBuffer::Unbind() const{
+    GLCall(glBindRenderbuffer(GL_RENDERBUFFER, 0));
+}
+
+// Frame Buffer
+// -------------------------------------------------
+FrameBuffer::FrameBuffer(){
+    GLCall(glGenFramebuffers(1, &Renderer_ID));
+    GLCall(glBindFramebuffer(GL_FRAMEBUFFER, Renderer_ID));
+}
+
+FrameBuffer::~FrameBuffer(){
+    GLCall(glDeleteFramebuffers(1, &Renderer_ID));
+}
+
+void FrameBuffer::Bind(GLenum e) const{
+    switch(e){
+        case GL_READ_FRAMEBUFFER:
+            GLCall(glBindFramebuffer(GL_READ_FRAMEBUFFER, Renderer_ID));
+            break;
+        case GL_DRAW_FRAMEBUFFER:
+            GLCall(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Renderer_ID));
+            break;
+        case GL_FRAMEBUFFER:
+            GLCall(glBindFramebuffer(GL_FRAMEBUFFER, Renderer_ID));
+            break;
+    }
+}
+
+void FrameBuffer::Unbind() const{
+    GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+void FrameBuffer::BindTexture() const{
+    GLCall(glBindTexture(GL_TEXTURE_2D, Texture_ID));
+}
+
+void FrameBuffer::UnbindTexture() const{
+    GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }

@@ -47,6 +47,8 @@ int main(){
         return EXIT_FAILURE;
     }
 
+    glfwSetFramebufferSizeCallback(Window, framebuffer_size_callback);
+
     std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
@@ -63,35 +65,40 @@ int main(){
 
     Shader PBRShader(shaders_location + "pbr.vert", shaders_location + "pbr.frag");
 
+    Shader bloomShader(shaders_location + "bloom.vert", shaders_location + "bloom.frag");
     
-    // Vertex Data for a Plane with Normals and UV Coordinates
-    // std::vector<float> vertices = {
-    //     // Positions           // Normals         // UV Coordinates
-    //     -0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 0.0f, // Bottom-left
-    //      0.5f,  0.0f, -0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 0.0f, // Bottom-right
-    //      0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   1.0f, 1.0f, // Top-right
-    //     -0.5f,  0.0f,  0.5f,   0.0f, 1.0f,  0.0f,   0.0f, 1.0f  // Top-left
-    // };
+    Shader gaussianBlurShader(shaders_location + "gaussianBlur.vert", shaders_location + "gaussianBlur.frag");
 
-    // std::vector<unsigned int> indices = {
-    //     // Plane face
-    //     0, 1, 2,
-    //     0, 2, 3
-    // };
+    Shader toneMap(shaders_location + "toneMap.vert", shaders_location + "toneMap.frag");
+
+    Shader sampleTest(shaders_location + "sampleTest.vert", shaders_location + "sampleTest.frag");
+
+    // Vertex Data for a Plane with Positions (X, Y, Z) and UV Coordinates
+    std::vector<float> vertices = {
+        // Positions           // UV Coordinates
+        -1.0f, -1.0f, 0.0f,    0.0f, 0.0f, // Bottom-left
+         1.0f, -1.0f, 0.0f,    1.0f, 0.0f, // Bottom-right
+         1.0f,  1.0f, 0.0f,    1.0f, 1.0f, // Top-right
+        -1.0f,  1.0f, 0.0f,    0.0f, 1.0f  // Top-left
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2,
+        0, 2, 3
+    };
 
 
     // Buffers
-    // VertexLayout *layout = new VertexLayout();
-    // layout->Push<float>(3); // Position
-    // layout->Push<float>(3); // Normal
-    // layout->Push<float>(2); // UV
+    VertexLayout *layout = new VertexLayout();
+    layout->Push<float>(3); // Position
+    layout->Push<float>(2); // UV
     
-    // VertexBuffer *VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
+    VertexBuffer *VBO = new VertexBuffer(vertices.data(), (unsigned int)vertices.size() * sizeof(float));
     
-    // VertexArray *VAO = new VertexArray();
-    // VAO->AddBuffer(*VBO, *layout);
+    VertexArray *VAO = new VertexArray();
+    VAO->AddBuffer(*VBO, *layout);
 
-    // IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
+    IndexBuffer *IBO = new IndexBuffer(indices.data(), (unsigned int)indices.size());
 
 
     // Models, Light and Materials
@@ -155,6 +162,32 @@ int main(){
     Texture pbrHeight;
     pbrHeight.loadTexture(textures_location + "height.png");
 
+    
+    // Depth Buffer
+    FrameBuffer HDRFBO;
+    HDRFBO.Bind(GL_FRAMEBUFFER);
+    Texture HDRTexture;
+    HDRTexture.genTextureHDR(SCR_WIDTH, SCR_HEIGHT);
+
+    DepthBuffer depthBuffer;
+    depthBuffer.Bind();
+
+    // Frame Buffers and Textures
+
+    FrameBuffer BloomFBO;
+    BloomFBO.Bind(GL_FRAMEBUFFER);
+    Texture BloomTexture;
+    BloomTexture.genTextureHDR(SCR_WIDTH, SCR_HEIGHT);
+
+    std::vector<FrameBuffer> scaledFBOs(2);
+    std::vector<Texture> scaledTextures(2);
+    for (int i = 0; i < 2; i++) {
+        scaledFBOs[i].Bind(GL_FRAMEBUFFER);
+        scaledTextures[i].bindTexture();
+        scaledTextures[i].genTextureHDR(SCR_WIDTH / 4, SCR_HEIGHT / 4);
+    }
+
+
     // Rendering Loop
     while (glfwWindowShouldClose(Window) == false) {
         
@@ -167,7 +200,11 @@ int main(){
         camera.Update();
         
         // Background Fill Color
-        glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+        
+        HDRFBO.Bind(GL_FRAMEBUFFER);
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -241,7 +278,70 @@ int main(){
         model1->Draw(shader1, camera);
         
         // Post processing
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+
+        VAO->Bind();
+        VBO->Bind();
+        IBO->Bind();
+        BloomFBO.Bind(GL_FRAMEBUFFER);
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        bloomShader.use();
+        HDRTexture.bindTexture();
+        bloomShader.setInt("scene", 0);
+        glDrawElements(GL_TRIANGLES, IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
         
+        // Down Sampling
+
+        BloomFBO.Bind(GL_READ_FRAMEBUFFER);
+        scaledFBOs[0].Bind(GL_DRAW_FRAMEBUFFER);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+        // Blur Passes
+
+        int blurPasses = 8;
+        bool horizontal = true;
+        for (int i = 0; i < blurPasses; i++) {
+            scaledFBOs[horizontal].Bind(GL_FRAMEBUFFER);
+            glViewport(0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4);
+            gaussianBlurShader.use();
+            gaussianBlurShader.setBool("horizontal", horizontal);
+
+            if (i == 0) {
+                scaledTextures[0].bindTexture();
+            } else {
+                scaledTextures[!horizontal].bindTexture();
+            }
+            
+            gaussianBlurShader.setInt("image", 0);
+            glDrawElements(GL_TRIANGLES, IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
+            horizontal = !horizontal;  // Switch direction
+        }
+
+        
+        // // Up Sampling
+        scaledFBOs[1].Bind(GL_READ_FRAMEBUFFER);
+        BloomFBO.Bind(GL_DRAW_FRAMEBUFFER);
+        glBlitFramebuffer(0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        
+        // // Draw Test
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        // sampleTest.use();
+        // HDRTexture.bindTexture(0);
+        // sampleTest.setInt("scene", 0);
+        // glDrawElements(GL_TRIANGLES, IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
+        
+        // Draw with Bloom
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        toneMap.use();
+        HDRTexture.bindTexture(0);
+        BloomTexture.bindTexture(1);
+        toneMap.setInt("hdrBuffer", 0);
+        toneMap.setInt("bloomBuffer", 1);
+        glDrawElements(GL_TRIANGLES, IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
 
         // Flip Buffers and Draw
         glfwSwapBuffers(Window);

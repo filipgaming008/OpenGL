@@ -51,6 +51,7 @@ public:
     void bindTexture(unsigned int slot = 0);
 
     void addTextureParameters(const TextureParameters &param);
+    void genTextureHDR(int width, int height);
 
     inline unsigned int getTextureID() const { return texture_ID; }
     inline int getWidth() const { return width; }

@@ -87,3 +87,38 @@ class VertexArray{
 
     void AddBuffer(const VertexBuffer &vb, const VertexLayout &layout);
 };
+
+// Depth Buffer
+// -------------------------------------------------
+class DepthBuffer{
+private:
+    unsigned int Renderer_ID;
+public:
+    DepthBuffer();
+    ~DepthBuffer();
+
+    void Bind() const;
+    void Unbind() const;
+
+    inline unsigned int GetID() const { return Renderer_ID; }
+};
+
+// Frame Buffer
+// -------------------------------------------------
+class FrameBuffer{
+private:
+    unsigned int Renderer_ID;
+    unsigned int Texture_ID;
+public:
+    FrameBuffer();
+    ~FrameBuffer();
+
+    void Bind(GLenum e) const;
+    void Unbind() const;
+
+    void BindTexture() const;
+    void UnbindTexture() const;
+
+    inline unsigned int GetTextureID() const { return Texture_ID; }
+    inline unsigned int GetID() const { return Renderer_ID; }
+};
